@@ -1,0 +1,25 @@
+    /* <!-- Element Selector --> */
+    h1 , #hobbies {
+        color: red;
+        background-color: yellow;
+    }
+
+    /* ID Selector */
+    #hobbies {
+        border: 2px solid green
+    }
+
+    /* Apply to all li elements that are children of #hobbies
+    (Any element with that ID) */
+    #hobbies li {
+        background: lightblue;
+    }
+
+    li:hover {
+        background: lightgreen;
+    }
+    
+    /* Class Selector */
+    .big {
+        font-size: 2em;
+    }
