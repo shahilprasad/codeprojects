@@ -1,25 +1,7 @@
 import express from 'express'
-import mongoose from 'mongoose'
+import { EntryModel, CategoryModel } from './db.js'
 
-const categories = ['Food', 'Coding', 'Sports', 'Other']
-
-const entries = [
-    { category: 'Food', content: 'Pizza' },
-    { category: 'Coding', content: 'JavaScript' },
-    { category: 'Sports', content: 'Soccer' },
-    { category: 'Other', content: 'Sleeping' }
-]
-
-mongoose.connect('')
-    .then(conn => console.log(conn.connection.readyState === 1 ? 'MongoDB connected!' : 'MongoDB failed to connect'))
-    .catch(err => console.error(err))
-
-const entriesSchema = new mongoose.Schema({
-    category: { type: String, required: true },
-    content: { type: String, required: true }
-})
-
-const EntryModel = mongoose.model('Entry', entriesSchema)
+const categories = ['Food', 'Gaming', 'Coding', 'Other']
 
 const app = express()
 
@@ -27,12 +9,12 @@ app.use(express.json())
 
 app.get('/', (req, res) => res.send({ info: 'Journal API' }))
 
-app.get('/categories', (req, res) => res.status(201).send(categories))
+app.get('/categories', async (req, res) => res.send(await CategoryModel.find()))
 
-app.get('/entries', (req, res) => res.status(201).send(entries))
+app.get('/entries', async (req, res) => res.send(await EntryModel.find()))
 
-app.get('/entries/:id', (req, res) => {
-    const entry = entries[req.params.id - 1]
+app.get('/entries/:id', async (req, res) => {
+    const entry = await EntryModel.findById(req.params.id)
     if (entry) {
         res.send(entry)
     } else {
@@ -42,19 +24,48 @@ app.get('/entries/:id', (req, res) => {
 
 app.post('/entries', async (req, res) => {
     try {
-    // Get entry data from the request
-    // console.log(req.body)
-    // Validate
-    // Create a new entry object
-    // Push the entry to the array
-    // entries.push(req.body)
-    const insertedEntry =  await EntryModel.create(req.body)
-    // Respond with 201 and the created entry
-    res.status(201).send(insertedEntry)
+        // Get entry data from the request
+        // console.log(req.body)
+        // TODO: Validate
+        // Create a new entry object
+        // Push the new entry to the array
+        // entries.push(req.body)
+        const insertedEntry = await EntryModel.create(req.body)
+        // Respond with 201 and the created entry
+        res.status(201).send(insertedEntry)
     }
     catch (err) {
-        res.status(400).send({ error: err.message })
+        res.status(500).send({ error: err.message })
     }
 })
+
+app.put('/entries/:id', async (req, res) => {
+    try {
+        const updatedEntry = await EntryModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        if (updatedEntry) {
+            res.send(updatedEntry)
+        } else {
+            res.status(404).send({ error: 'Entry not found' })
+        }
+    }
+    catch (err) {
+        res.status(500).send({ error: err.message })
+    }
+})
+
+app.delete('/entries/:id', async (req, res) => {
+    try {
+        const deletedEntry = await EntryModel.findByIdAndDelete(req.params.id)
+        if (deletedEntry) {
+            res.sendStatus(204)
+        } else {
+            res.status(404).send({ error: 'Entry not found' })
+        }
+    }
+    catch (err) {
+        res.status(500).send({ error: err.message })
+    }
+})
+
 
 app.listen(4001)
